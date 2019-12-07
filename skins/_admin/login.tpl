@@ -36,4 +36,5 @@
 			<p align="center"><a href="../profile.php?mode=lost">Lost Password?</a></p>
 		</form>
 	</div>
+</body>
 </html>
