@@ -95,40 +95,53 @@ function random_str($len, $lower = 1, $mode = 1)
 function filter_param($param, $mode = '')
 {
     global $config;
-    $html = 0;
-    if (!$config['gpc_quotes']) {
-        $param = addslashes($param);
-    }
-
-    $param = trim($param);
-    $cmd = explode(" ", $mode);
-    reset($cmd);
-    while (list($key, $cm) = each($cmd)) {
-        if ($cm == 'noslash') {
-            $param = stripslashes($param);
-        }
-        if ($cm == 'nohtml') {
-            $param = strip_tags($param);
-        }
-        if ($cm == 'filterhtml') {
-            $param = strip_tags($param, $config['allowed_html_tags']);
-            $html = 1;
-        }
-        if ($cm == 'html') {
-            $html = 1;
-        }
-        if (($cm == 'rte') && ($config['wysiwyg'])) {
-            $html = 1;
-        }
-        if (($cm == 'rte') && (!$config['wysiwyg'])) {
-            $html = 0;
-        }
-    }
-
-    if ($html) {
-        return $param;
+    if (!is_array($param)) {
+        $is_array = false;
+        $params = array($param);
     } else {
-        return htmlspecialchars($param, ENT_QUOTES);
+        $is_array = true;
+        $params = $param;
+    }
+
+    $cmd = explode(" ", $mode);
+    foreach ($params as $k => $param) {
+        $html = false;
+        if (!$config['gpc_quotes']) {
+            $param = addslashes($param);
+        }
+        $param = trim($param);
+        foreach ($cmd as $cm) {
+            if ($cm == 'noslash') {
+                $param = stripslashes($param);
+            }
+            if ($cm == 'nohtml') {
+                $param = strip_tags($param);
+            }
+            if ($cm == 'filterhtml') {
+                $param = strip_tags($param, $config['allowed_html_tags']);
+                $html = 1;
+            }
+            if ($cm == 'html') {
+                $html = true;
+            }
+            if (($cm == 'rte') && ($config['wysiwyg'])) {
+                $html = true;
+            }
+            if (($cm == 'rte') && (!$config['wysiwyg'])) {
+                $html = false;
+            }
+        }
+
+        if (!$html) {
+            $param = htmlspecialchars($param, ENT_QUOTES);
+        }
+        $params[$k] = $param;
+    }
+
+    if (!$is_array) {
+        return $params[0];
+    } else {
+        return $params;
     }
 }
 
